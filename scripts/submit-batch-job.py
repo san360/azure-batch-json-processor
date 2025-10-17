@@ -150,16 +150,18 @@ def create_batch_job(
                 EnvironmentSetting(name="TASK_ID", value=task_id),
             ]
 
-            # Container settings
+            # Container settings - let the container use its default entrypoint and command
             container_settings = TaskContainerSettings(
                 image_name=acr_image,
-                container_run_options="--rm"
+                container_run_options="--rm --workdir /app"  # Ensure correct working directory
             )
 
-            # Create task
+            # Create task with empty command_line to use container's default CMD
+            # The Dockerfile defines: ENTRYPOINT ["python", "-u"] and CMD ["processor/main.py"]
+            # This will effectively run: python -u processor/main.py
             task = TaskAddParameter(
                 id=task_id,
-                command_line="python processor/main.py",  # Explicit command to run the processor
+                command_line="",  # Empty command line lets container run its default CMD
                 container_settings=container_settings,
                 environment_settings=environment_settings
             )

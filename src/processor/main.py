@@ -93,10 +93,28 @@ def main():
             use_managed_identity=True
         )
 
-        # Create working directory
-        work_dir = Path("/tmp/batch_work")
-        work_dir.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Working directory: {work_dir}")
+        # Create working directory - try multiple locations
+        work_dirs_to_try = ["/app/temp", "/tmp/batch_work", "/app"]
+        work_dir = None
+        
+        for dir_path in work_dirs_to_try:
+            try:
+                work_dir = Path(dir_path)
+                work_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Test write permissions
+                test_file = work_dir / "test_write.tmp"
+                test_file.write_text("test")
+                test_file.unlink()
+                
+                logger.info(f"Working directory: {work_dir}")
+                break
+            except Exception as e:
+                logger.warning(f"Cannot use {dir_path}: {e}")
+                continue
+        
+        if work_dir is None:
+            raise Exception("No writable directory found")
 
         # Download input file
         logger.info(f"Downloading input file: {input_blob_name}")

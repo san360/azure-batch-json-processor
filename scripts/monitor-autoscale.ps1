@@ -37,6 +37,7 @@ for ($i = 1; $i -le $Intervals; $i++) {
     Write-Host "[$timestamp] Check $i/$Intervals" -ForegroundColor Cyan
     
     try {
+        # Use Azure CLI with current authentication context (managed identity or user login)
         $result = az batch pool show --pool-id $PoolId --account-name $BatchAccountName --account-endpoint $BatchAccountUrl --query "{currentNodes:currentDedicatedNodes,targetNodes:targetDedicatedNodes,lastEval:autoScaleRun.timestamp,hasError:autoScaleRun.error,errorMessage:autoScaleRun.error.message,results:autoScaleRun.results}" --output json | ConvertFrom-Json
         
         Write-Host "  Current Nodes: $($result.currentNodes)" -ForegroundColor White

@@ -24,14 +24,34 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY processor/ ./processor/
 
-# Create temp directory for file processing
-RUN mkdir -p /tmp/batch_work
+# Create temp directory for file processing with proper permissions
+RUN mkdir -p /tmp/batch_work && \
+    chmod 777 /tmp/batch_work && \
+    mkdir -p /app/temp && \
+    chmod 777 /app/temp
 
 # Set Python path
 ENV PYTHONPATH=/app
 
-# Set entrypoint to Python
-ENTRYPOINT ["python", "-u"]
+# Create a startup script for better debugging
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'echo "=== Container Starting ==="' >> /app/start.sh && \
+    echo 'echo "Working Directory: $(pwd)"' >> /app/start.sh && \
+    echo 'echo "Python Version: $(python --version)"' >> /app/start.sh && \
+    echo 'echo "Python Path: $PYTHONPATH"' >> /app/start.sh && \
+    echo 'echo "User ID: $(id)"' >> /app/start.sh && \
+    echo 'echo "Contents of /app:"' >> /app/start.sh && \
+    echo 'ls -la /app/' >> /app/start.sh && \
+    echo 'echo "Contents of /app/processor:"' >> /app/start.sh && \
+    echo 'ls -la /app/processor/ || echo "processor directory not found"' >> /app/start.sh && \
+    echo 'echo "Directory permissions:"' >> /app/start.sh && \
+    echo 'ls -ld /tmp/batch_work /app/temp /app 2>/dev/null || echo "Some directories not found"' >> /app/start.sh && \
+    echo 'echo "=== Starting Python Application ==="' >> /app/start.sh && \
+    echo 'exec python -u processor/main.py "$@"' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
-# Default command: run main processor
-CMD ["processor/main.py"]
+# Set entrypoint to our startup script
+ENTRYPOINT ["/app/start.sh"]
+
+# Default command: no additional args
+CMD []
