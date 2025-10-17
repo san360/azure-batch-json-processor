@@ -1,0 +1,45 @@
+{
+  "name": "json-processor-pool",
+  "type": "Microsoft.Batch/batchAccounts/pools",
+  "properties": {
+    "displayName": "JSON Processor Pool with Managed Identity",
+    "vmSize": "Standard_D2s_v3",
+    "deploymentConfiguration": {
+      "virtualMachineConfiguration": {
+        "imageReference": {
+          "publisher": "microsoft-dsvm",
+          "offer": "ubuntu-hpc",
+          "sku": "2204",
+          "version": "latest"
+        },
+        "nodeAgentSkuId": "batch.node.ubuntu 22.04",
+        "containerConfiguration": {
+          "type": "dockerCompatible",
+          "containerImageNames": [
+            "azbatchacr.azurecr.io/batch-json-processor:latest"
+          ],
+          "containerRegistries": [
+            {
+              "registryServer": "azbatchacr.azurecr.io",
+              "identityReference": {
+                "resourceId": "/subscriptions/1da52b57-468a-4dc6-ba36-1255cc1f6e8e/resourcegroups/azure-batch/providers/Microsoft.ManagedIdentity/userAssignedIdentities/azure-batch-identity"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "scaleSettings": {
+      "autoScale": {
+        "formula": "// In this example, the pool size is adjusted based on the number of tasks in the queue.\n// Note that both comments and line breaks are acceptable in formula strings.\n\n// Get pending tasks for the past 15 minutes.\n$samples = $ActiveTasks.GetSamplePercent(TimeInterval_Minute * 15);\n// If we have fewer than 70 percent data points, we use the last sample point, otherwise we use the maximum of last sample point and the history average.\n$tasks = $samples < 70 ? max(0, $ActiveTasks.GetSample(1)) : \nmax( $ActiveTasks.GetSample(1), avg($ActiveTasks.GetSample(TimeInterval_Minute * 15)));\n// If number of pending tasks is not 0, set targetVM to pending tasks, otherwise half of current dedicated.\n$targetVMs = $tasks > 0 ? $tasks : max(0, $TargetDedicatedNodes / 2);\n// The pool size is capped at 5, if target VM value is more than that, set it to5. This value should be adjusted according to your use case.\ncappedPoolSize = 5;\n$TargetDedicatedNodes = max(0, min($targetVMs, cappedPoolSize));\n// Set node deallocation mode - keep nodes active only until tasks finish\n$NodeDeallocationOption = taskcompletion;",
+        "evaluationInterval": "PT5M"
+      }
+    }
+  },
+  "identity": {
+    "type": "UserAssigned",
+    "userAssignedIdentities": {
+      "/subscriptions/1da52b57-468a-4dc6-ba36-1255cc1f6e8e/resourcegroups/azure-batch/providers/Microsoft.ManagedIdentity/userAssignedIdentities/azure-batch-identity": {}
+    }
+  }
+}

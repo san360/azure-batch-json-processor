@@ -1,0 +1,128 @@
+{
+  "batch_id": "sample_batch_demo",
+  "generated_at": "2025-01-17T10:00:00Z",
+  "transaction_count": 3,
+  "date_range": {
+    "start": "2024-12-18T10:00:00Z",
+    "end": "2025-01-17T10:00:00Z"
+  },
+  "transactions": [
+    {
+      "transaction_id": "550e8400-e29b-41d4-a716-446655440001",
+      "timestamp": "2025-01-15T14:23:45Z",
+      "customer": {
+        "customer_id": "CUST-12345",
+        "name": "John Smith",
+        "email": "john.smith@example.com",
+        "country": "USA",
+        "state": "CA"
+      },
+      "line_items": [
+        {
+          "product_id": "PROD-1001",
+          "product_name": "Wireless Headphones",
+          "category": "Electronics",
+          "quantity": 2,
+          "unit_price": 79.99,
+          "discount": 0.0,
+          "subtotal": 159.98
+        },
+        {
+          "product_id": "PROD-1002",
+          "product_name": "USB-C Cable",
+          "category": "Electronics",
+          "quantity": 3,
+          "unit_price": 12.99,
+          "discount": 5.00,
+          "subtotal": 33.97
+        }
+      ],
+      "subtotal": 193.95,
+      "tax": 15.52,
+      "shipping_cost": 5.99,
+      "total": 215.46,
+      "payment_method": "Credit Card",
+      "shipping_method": "Standard",
+      "status": "completed",
+      "_is_synthetic_anomaly": false
+    },
+    {
+      "transaction_id": "550e8400-e29b-41d4-a716-446655440002",
+      "timestamp": "2025-01-16T09:12:33Z",
+      "customer": {
+        "customer_id": "CUST-67890",
+        "name": "Mary Johnson",
+        "email": "mary.johnson@example.com",
+        "country": "USA",
+        "state": "NY"
+      },
+      "line_items": [
+        {
+          "product_id": "PROD-2001",
+          "product_name": "Mechanical Keyboard",
+          "category": "Electronics",
+          "quantity": 1,
+          "unit_price": 129.99,
+          "discount": 0.0,
+          "subtotal": 129.99
+        }
+      ],
+      "subtotal": 129.99,
+      "tax": 10.40,
+      "shipping_cost": 12.99,
+      "total": 153.38,
+      "payment_method": "PayPal",
+      "shipping_method": "Express",
+      "status": "completed",
+      "_is_synthetic_anomaly": false
+    },
+    {
+      "transaction_id": "550e8400-e29b-41d4-a716-446655440003",
+      "timestamp": "2025-01-16T16:45:22Z",
+      "customer": {
+        "customer_id": "CUST-11111",
+        "name": "David Williams",
+        "email": "david.williams@example.com",
+        "country": "Canada",
+        "state": null
+      },
+      "line_items": [
+        {
+          "product_id": "PROD-3001",
+          "product_name": "Laptop Stand",
+          "category": "Office",
+          "quantity": 1,
+          "unit_price": 45.00,
+          "discount": 0.0,
+          "subtotal": 45.00
+        },
+        {
+          "product_id": "PROD-3002",
+          "product_name": "Ergonomic Mouse",
+          "category": "Electronics",
+          "quantity": 1,
+          "unit_price": 59.99,
+          "discount": 0.0,
+          "subtotal": 59.99
+        },
+        {
+          "product_id": "PROD-3003",
+          "product_name": "Desk Lamp",
+          "category": "Office",
+          "quantity": 1,
+          "unit_price": 39.99,
+          "discount": 10.00,
+          "subtotal": 29.99
+        }
+      ],
+      "subtotal": 134.98,
+      "tax": 10.80,
+      "shipping_cost": 35.99,
+      "total": 181.77,
+      "payment_method": "Credit Card",
+      "shipping_method": "International",
+      "status": "completed",
+      "_is_synthetic_anomaly": false
+    }
+  ]
+}
