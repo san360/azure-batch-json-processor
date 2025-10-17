@@ -99,16 +99,16 @@ def create_pool_with_azure_cli(config: Dict[str, Any]) -> bool:
         "type": "Microsoft.Batch/batchAccounts/pools",
         "properties": {
             "displayName": "JSON Processor Pool with Managed Identity",
-            "vmSize": "STANDARD_A2_V2",
+            "vmSize": "Standard_A2_v2",
             "deploymentConfiguration": {
                 "virtualMachineConfiguration": {
                     "imageReference": {
-                        "publisher": "microsoft-azure-batch",
-                        "offer": "ubuntu-server-container", 
-                        "sku": "20-04-lts",
+                        "publisher": "microsoft-dsvm",
+                        "offer": "ubuntu-hpc", 
+                        "sku": "2204",
                         "version": "latest"
                     },
-                    "nodeAgentSkuId": "batch.node.ubuntu 20.04",
+                    "nodeAgentSkuId": "batch.node.ubuntu 22.04",
                     "containerConfiguration": {
                         "type": "dockerCompatible",
                         "containerImageNames": [container_image],
@@ -172,7 +172,7 @@ def create_pool_with_azure_cli(config: Dict[str, Any]) -> bool:
         
         # Create the pool using Azure REST API
         print(f"🏗️  Creating pool '{pool_id}' with managed identity...")
-        print("   VM Size: STANDARD_A2_V2")
+        print("   VM Size: Standard_A2_v2")
         print("   Scaling: Autoscale (0-5 nodes)")
         print("   Formula: ActiveTasks-based with 15min history")
         print("   Evaluation Interval: 5 minutes")
@@ -194,7 +194,7 @@ def create_pool_with_azure_cli(config: Dict[str, Any]) -> bool:
             print()
             print("📊 Pool Details:")
             print(f"   Pool ID: {pool_id}")
-            print(f"   VM Size: STANDARD_A2_V2")
+            print(f"   VM Size: Standard_A2_v2")
             print(f"   Scaling: Autoscale enabled")
             print(f"   Max Nodes: 5")
             print(f"   Formula: ActiveTasks with 15min sampling")
