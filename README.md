@@ -41,10 +41,8 @@ azure-batch/
 │   ├── upload-to-storage.py         # Upload files to Azure Storage
 │   ├── login-acr.sh/ps1            # Login to Azure Container Registry
 │   ├── acr-build-push.sh/ps1       # Build and push Docker image
+│   ├── create-batch-pool.sh/ps1    # Create basic batch pool
 │   ├── create-batch-pool-managed-identity.py  # Advanced pool with autoscaling
-│   ├── monitor-autoscale.ps1        # Monitor autoscaling status
-│   ├── submit-batch-job.py          # Submit processing jobs
-│   └── download-results.py          # Download processed results
 ├── src/
 │   ├── Dockerfile                   # Container definition
 │   ├── requirements.txt             # Python dependencies
@@ -67,8 +65,8 @@ azure-batch/
 ### 1. Clone and Configure
 
 ```bash
-git clone https://github.com/san360/azure-batch-json-processor.git
-cd azure-batch-json-processor
+git clone [your-repo]
+cd azure-batch
 ```
 
 ### 2. Configure Azure Resources
@@ -157,91 +155,384 @@ python scripts\upload-to-storage.py --container batch-input --path .\samples\
 # Create pool with autoscaling (0-10 nodes, scales based on active tasks)
 python scripts\create-batch-pool-managed-identity.py
 ```
+│   ├── create-batch-pool-managed-identity.py  # Create autoscaling pool with managed identity
+│   ├── monitor-autoscale.ps1           # Monitor autoscaling status
+│   ├── submit-batch-job.py             # Submit Batch job
+│   └── download-results.py             # Download processed results
+├── src/
+│   ├── processor/
+│   │   ├── main.py              # Main entry point
+│   │   ├── json_processor.py    # Processing logic
+│   │   ├── storage_helper.py    # Azure Storage operations
+│   │   └── __init__.py
+│   ├── Dockerfile               # Container definition
+│   └── requirements.txt         # Python dependencies
+├── config/
+│   ├── config.sample.json       # Sample configuration
+│   └── config.json              # Your configuration (create from sample)
+├── samples/                     # Generated sample data (created by script)
+├── results/                     # Downloaded results (created by script)
+└── README.md                    # This file
+```
 
-### 9. Submit Batch Job
+## Prerequisites
+
+### Azure Resources (You already have)
+- Azure Container Registry (ACR)
+- Azure Batch Account with Managed Identity enabled
+- Azure Storage Account
+
+### Local Tools
+- Python 3.11 or higher
+- Docker Desktop
+- Azure CLI
+- Git
+
+## Quick Start
+
+### 1. Clone and Setup
+
+```bash
+cd c:\dev\azure-batch
+```
+
+### 2. Configure
+
+```bash
+# Copy sample configuration
+copy config\config.sample.json config\config.json
+
+# Edit config\config.json with your Azure resource details
+notepad config\config.json
+```
+
+### 3. Install Python Dependencies
+
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate (Windows)
+.\venv\Scripts\activate
+
+# Install dependencies
+pip install -r src\requirements.txt
+```
+
+### 4. Generate Sample Data
+
+```bash
+# Generate 5 files with 1000 transactions each
+python scripts\generate-synthetic-data.py --count 1000 --files 5 --output .\samples\
+```
+
+### 5. Upload to Storage
+
+```bash
+# Upload generated files
+python scripts\upload-to-storage.py --container batch-input --path .\samples\
+```
+
+### 6. Create Autoscaling Batch Pool with Managed Identity
+
+```bash
+# Create autoscaling pool with managed identity (recommended)
+python scripts\create-batch-pool-managed-identity.py
+
+# Or create basic pool (PowerShell/Bash) - no autoscaling
+.\scripts\create-batch-pool.ps1
+# or
+.\scripts\create-batch-pool.sh
+```
+
+**Autoscaling Features:**
+- Scales from 0-10 nodes based on workload
+- 1 node per 3 pending tasks
+- 5-minute evaluation intervals
+- Automatic scale-down when idle
+- Cost-optimized (pay only when processing)
+
+### 7. Build and Push Docker Image
+
+```bash
+# Login to ACR (PowerShell)
+.\scripts\login-acr.ps1
+
+# Build and push image (PowerShell)
+.\scripts\acr-build-push.ps1
+```
+
+### 8. Submit Batch Job
 
 ```bash
 # Submit job to process all files (uses managed identity)
 python scripts\submit-batch-job.py --pool-id json-processor-pool
 ```
 
-### 10. Monitor Autoscaling and Jobs
+### 9. Monitor Autoscaling and Jobs
 
 ```bash
 # Monitor autoscaling status
 .\scripts\monitor-autoscale.ps1
 
 # Check pool status
-az batch pool show --pool-id json-processor-pool
+az batch pool show --pool-id json-processor-pool --account-name batchsan360 --account-endpoint https://batchsan360.swedencentral.batch.azure.com
 
 # List running jobs
-az batch job list
+az batch job list --account-name batchsan360
 
 # Check task status
-az batch task list --job-id JOB_ID
+az batch task list --job-id JOB_ID --account-name batchsan360
 ```
 
-### 11. Download Results
+### 10. Download Results
 
 ```bash
-# Download all processed files
+# Monitor job status
+az batch job list --query "[].{JobId:id, State:state}"
+
+# Download results when complete
 python scripts\download-results.py --output .\results\
 ```
 
 ## Configuration
 
-### config.json Structure
+The configuration is automatically managed by the setup scripts. Initial setup:
+
+```powershell
+# Copy sample configuration
+copy config\config.sample.json config\config.json
+
+# Edit with your basic settings (subscription, resource group, location, names)
+notepad config\config.json
+
+# Run setup script to create all resources and update config automatically
+.\scripts\setup-azure-resources-from-config.ps1
+```
+
+After running the setup script, your `config\config.json` will contain:
 
 ```json
 {
   "azure": {
     "subscription_id": "your-subscription-id",
-    "resource_group": "your-resource-group",
-    "batch": {
-      "account_name": "your-batch-account",
-      "account_url": "https://your-batch-account.region.batch.azure.com",
-      "pool_id": "json-processor-pool",
-      "managed_identity_id": "/subscriptions/SUB_ID/resourceGroups/RG_NAME/providers/Microsoft.ManagedIdentity/userAssignedIdentities/batch-managed-identity"
-    },
+    "resource_group": "your-resource-group", 
+    "location": "eastus",
     "storage": {
-      "account_name": "your-storage-account",
+      "account_name": "yourstorageaccount",
       "input_container": "batch-input",
-      "output_container": "batch-output"
+      "output_container": "batch-output",
+      "logs_container": "batch-logs",
+      "resource_id": "/subscriptions/.../storageAccounts/yourstorageaccount"
     },
     "acr": {
-      "name": "your-acr",
-      "login_server": "your-acr.azurecr.io",
+      "name": "yourregistry",
+      "login_server": "yourregistry.azurecr.io",
       "image_name": "batch-json-processor",
-      "image_tag": "latest"
+      "image_tag": "latest",
+      "resource_id": "/subscriptions/.../registries/yourregistry"
+    },
+    "batch": {
+      "account_name": "yourbatchaccount",
+      "account_url": "https://yourbatchaccount.eastus.batch.azure.com",
+      "pool_id": "json-processor-pool", 
+      "managed_identity_id": "/subscriptions/.../userAssignedIdentities/your-identity",
+      "resource_id": "/subscriptions/.../batchAccounts/yourbatchaccount"
+    },
+    "identity": {
+      "name": "your-identity",
+      "resource_id": "/subscriptions/.../userAssignedIdentities/your-identity",
+      "principal_id": "principal-id-guid",
+      "client_id": "client-id-guid"
     }
   }
 }
 ```
 
-## Autoscaling Configuration
+## Detailed Documentation
 
-The pool uses this autoscaling formula:
+- **[Architecture Documentation](docs/ARCHITECTURE.md)**: Detailed architecture, data flow, and design decisions
+- **[Deployment Guide](docs/DEPLOYMENT.md)**: Step-by-step deployment instructions with troubleshooting
 
-```javascript
-// Scale 0-10 nodes based on active tasks (1 node per 3 tasks)
-$TargetDedicatedNodes = min(10, max(0, ceil(avg($ActiveTasks.GetSample(TimeInterval_Minute * 5)) / 3)));
-$NodeDeallocationOption = taskcompletion;
+## Processing Logic
+
+The processor performs the following operations on each JSON file:
+
+1. **Validation**: Checks for required fields, data types, valid ranges
+2. **Aggregation**: Calculates totals, averages, counts
+3. **Customer Analytics**: Top customers, order counts, spending patterns
+4. **Product Analytics**: Best-selling products, revenue by category
+5. **Anomaly Detection**: High-value transactions, suspicious patterns
+6. **Report Generation**: Comprehensive JSON output with all insights
+
+### Input Format
+
+```json
+{
+  "batch_id": "batch_20250117_143022",
+  "transaction_count": 1000,
+  "transactions": [
+    {
+      "transaction_id": "uuid",
+      "timestamp": "2025-01-17T14:30:22Z",
+      "customer": {...},
+      "line_items": [...],
+      "total": 125.45
+    }
+  ]
+}
 ```
 
-**Key Features:**
+### Output Format
 
-- **Minimum nodes**: 0 (cost-effective when idle)
-- **Maximum nodes**: 10 (prevents runaway scaling)
-- **Scaling ratio**: 1 node per 3 active tasks
-- **Evaluation period**: 5-minute average of active tasks
-- **Deallocation**: Waits for task completion before removing nodes
+```json
+{
+  "batch_id": "batch_20250117_143022",
+  "processed_at": "2025-01-17T14:35:22Z",
+  "processing_time_seconds": 12.5,
+  "validation": {
+    "total_transactions": 1000,
+    "valid_transactions": 998,
+    "invalid_transactions": 2
+  },
+  "analytics": {
+    "summary": {...},
+    "top_customers": [...],
+    "top_products": [...],
+    "revenue_by_category": {...}
+  },
+  "anomalies": {
+    "high_value_transactions": [...],
+    "suspicious_patterns": [...]
+  }
+}
+```
+
+## Common Commands
+
+## Advanced Usage
+
+### Generate Data
+
+```bash
+
+### Upload Files
+```bash
+# Upload all JSON files from samples directory
+python scripts\upload-to-storage.py --container batch-input --path .\samples\
+
+# Upload single file
+python scripts\upload-to-storage.py --container batch-input --path .\samples\file.json
+```
+
+### Build Docker Image
+```bash
+# Build locally (for testing)
+cd src
+docker build -t batch-json-processor:latest .
+
+# Test locally
+docker run -it batch-json-processor:latest python processor/main.py --help
+```
+
+### Monitor Batch Jobs
+```bash
+# List all jobs
+az batch job list --output table
+
+# Show job details
+az batch job show --job-id YOUR_JOB_ID
+
+# List tasks in a job
+az batch task list --job-id YOUR_JOB_ID --output table
+
+# View task logs
+az batch task file download --job-id YOUR_JOB_ID --task-id task-0 --file-path stdout.txt --destination stdout.txt
+```
+
+### Download Results
+```bash
+# Download all results
+python scripts\download-results.py --output .\results\
+
+# Download specific prefix
+python scripts\download-results.py --output .\results\ --prefix processed_batch_
+```
+
+## Troubleshooting
+
+### Authentication Issues
+```bash
+# Re-login to Azure
+az login
+
+# Verify subscription
+az account show
+
+# Test ACR access
+az acr login --name yourregistry
+```
+
+### Container Issues
+```bash
+# Test container locally
+docker run -it yourregistry.azurecr.io/batch-json-processor:latest python --version
+
+# Check container logs in Batch
+az batch task file list --job-id YOUR_JOB_ID --task-id task-0
+```
+
+### Storage Issues
+```bash
+# List blobs
+az storage blob list --container-name batch-input --account-name yourstorage --auth-mode login
+
+# Check Managed Identity permissions
+az role assignment list --assignee IDENTITY_PRINCIPAL_ID
+```
+
+## Future Enhancements
+
+### Phase 2: Azure Function Automation
+- Blob trigger to automatically start processing
+- Event-driven architecture
+- No manual script execution needed
+
+### Phase 3: Advanced Analytics
+- Machine learning model integration
+- Real-time streaming with Event Hubs
+- Power BI dashboard integration
+
+### Phase 4: CI/CD Pipeline
+- GitHub Actions / Azure DevOps
+- Automated testing
+- Continuous deployment
+
+## Performance
+
+Expected processing times (approximate):
+
+| File Size | Records | Processing Time | VM Size |
+|-----------|---------|-----------------|---------|
+| 1 MB      | 1,000   | 10-15 sec      | D2s_v3  |
+| 10 MB     | 10,000  | 45-60 sec      | D2s_v3  |
+| 100 MB    | 100,000 | 5-8 min        | D4s_v3  |
+
+## Cost Optimization
+
+- Use Low-Priority VMs for non-urgent workloads (80% savings)
+- Enable auto-scale to match workload
+- Set job termination policies
+- Use lifecycle management for storage
 
 ## Security
 
-- **No secrets**: All authentication uses managed identity
-- **Private registry**: Container images stored in private ACR
-- **RBAC**: Principle of least privilege for all role assignments
-- **Network isolation**: Optional VNet integration for enhanced security
+- **Managed Identity Only**: No keys, connection strings, or secrets in code
+- Azure Batch Account configured with User-Assigned Managed Identity
+- Storage Account configured with `BatchAccountManagedIdentity` mode
+- Container Registry authentication via managed identity
+- RBAC for fine-grained access control (Storage Blob Data Contributor role)
+- Network isolation with VNets (optional)
 
 ### Managed Identity Setup
 
@@ -263,54 +554,31 @@ This project implements a **keyless authentication** architecture:
    - Managed identity has `Storage Blob Data Contributor` role
    - `AcrPull` role for container registry access
 
-## Cost Optimization
-
-- **Autoscaling**: Scales to 0 nodes when idle
-- **Spot instances**: Optional spot VM pricing for cost savings (70-90% savings)
-- **Container reuse**: Efficient container image layering
-- **Storage optimization**: Lifecycle policies for blob storage
-
-## Performance
-
-Expected processing times (approximate):
-
-| File Size | Records | Processing Time | VM Size |
-|-----------|---------|----------------|----------|
-| 1 MB | 1,000 | 30 seconds | STANDARD_A1_V2 |
-| 10 MB | 10,000 | 2 minutes | STANDARD_A1_V2 |
-| 100 MB | 100,000 | 15 minutes | STANDARD_D2S_V3 |
-
-## Future Enhancements
-
-### Phase 2: Azure Function Automation
-
-- Blob trigger to automatically start processing
-- Event-driven architecture
-- No manual script execution needed
-
-### Phase 3: Advanced Analytics
-
-- Machine learning model integration
-- Real-time streaming with Event Hubs
-- Power BI dashboard integration
-
-### Phase 4: CI/CD Pipeline
-
-- GitHub Actions / Azure DevOps
-- Automated testing
-- Continuous deployment
+This setup ensures that:
+- No secrets are stored in configuration files
+- Authentication tokens are managed by Azure automatically
+- Access permissions are controlled through Azure RBAC
+- Credentials cannot be extracted or compromised from running tasks
 
 ## Contributing
 
-1. Fork the repository
-2. Create feature branch
-3. Add tests for new functionality
-4. Update documentation
-5. Submit pull request
+This is a demonstration project. Feel free to:
+- Customize processing logic for your use case
+- Add new analytics or validation rules
+- Integrate with your existing systems
+- Extend with additional Azure services
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - feel free to use and modify for your needs.
+
+## Support
+
+For issues or questions:
+1. Check [Deployment Guide](docs/DEPLOYMENT.md) troubleshooting section
+2. Review Azure Batch documentation
+3. Check container logs in Azure Portal
+4. Review task output files
 
 ## Resources
 

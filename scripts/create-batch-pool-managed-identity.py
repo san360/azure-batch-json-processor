@@ -16,12 +16,16 @@ from typing import Dict, Any
 
 def load_config() -> Dict[str, Any]:
     """Load configuration from config.json file."""
-    config_path = "c:/dev/azure-batch/config/config.json"
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, "..", "config", "config.json")
+    
     try:
         with open(config_path, 'r') as f:
             return json.load(f)
     except FileNotFoundError:
         print(f"❌ Configuration file not found: {config_path}")
+        print("Please create config/config.json from config/config.sample.json")
         sys.exit(1)
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON in configuration file: {e}")
@@ -99,7 +103,7 @@ def create_pool_with_azure_cli(config: Dict[str, Any]) -> bool:
         "type": "Microsoft.Batch/batchAccounts/pools",
         "properties": {
             "displayName": "JSON Processor Pool with Managed Identity",
-            "vmSize": "Standard_A2_v2",
+            "vmSize": "Standard_D2s_v3",
             "deploymentConfiguration": {
                 "virtualMachineConfiguration": {
                     "imageReference": {

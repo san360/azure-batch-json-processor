@@ -21,30 +21,38 @@ samples/*.json
 
 # Results
 results/
+logs/
 
 # Debug files
 pool_config_debug.json
+
+# Docker
+.dockerignore
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Azure
 .azure/
+*.publishsettings
 
 # Logs
 *.log
-logs/
 
 # Temporary files
 *.tmp
 *.temp
+tmp/
+temp/
 
 # Project specific
 .claude/

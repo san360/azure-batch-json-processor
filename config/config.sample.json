@@ -3,26 +3,32 @@
     "subscription_id": "YOUR_SUBSCRIPTION_ID",
     "resource_group": "YOUR_RESOURCE_GROUP",
     "location": "eastus",
-
     "storage": {
       "account_name": "yourstorageaccount",
       "input_container": "batch-input",
       "output_container": "batch-output",
-      "logs_container": "batch-logs"
+      "logs_container": "batch-logs",
+      "resource_id": "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.Storage/storageAccounts/yourstorageaccount"
     },
-
     "acr": {
       "name": "yourregistryname",
       "login_server": "yourregistryname.azurecr.io",
       "image_name": "batch-json-processor",
-      "image_tag": "latest"
+      "image_tag": "latest",
+      "resource_id": "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.ContainerRegistry/registries/yourregistryname"
     },
-
     "batch": {
       "account_name": "yourbatchaccount",
       "account_url": "https://yourbatchaccount.eastus.batch.azure.com",
       "pool_id": "json-processor-pool",
-      "managed_identity_id": "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/YOUR_IDENTITY_NAME"
+      "managed_identity_id": "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/YOUR_IDENTITY_NAME",
+      "resource_id": "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.Batch/batchAccounts/yourbatchaccount"
+    },
+    "identity": {
+      "name": "YOUR_IDENTITY_NAME",
+      "resource_id": "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.ManagedIdentity/userAssignedIdentities/YOUR_IDENTITY_NAME",
+      "principal_id": "YOUR_PRINCIPAL_ID",
+      "client_id": "YOUR_CLIENT_ID"
     }
   }
 }
