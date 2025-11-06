@@ -95,11 +95,16 @@ graph TB
     CONTAINER -->|Logs| LOGS
     OUTPUT -->|Contains| RESULTS
 
-    style GEN fill:#e1f5ff
-    style SUBMIT fill:#fff3e0
-    style POOL fill:#f3e5f5
-    style CONTAINER fill:#e8f5e9
-    style RESULTS fill:#fce4ec
+  %% Unified accessible color scheme (using Task box color) for readability
+  style GEN fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style SUBMIT fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style POOL fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style TASK fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style CONTAINER fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style RESULTS fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style INPUT fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style OUTPUT fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style LOGS fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
 ```
 
 #### V1 User Flow Diagram
@@ -128,23 +133,25 @@ flowchart TD
     
     DOWNLOAD --> END([Complete])
     
-    style START fill:#c8e6c9
-    style CONFIG fill:#bbdefb
-    style ENV fill:#ffe0b2
-    style DATA fill:#f8bbd0
-    style UPLOAD fill:#d1c4e9
-    style BUILD fill:#b2dfdb
-    style POOL fill:#fff9c4
-    style SUBMIT fill:#ffccbc
-    style PROCESS fill:#c5cae9
-    style MONITOR fill:#b3e5fc
-    style DOWNLOAD fill:#d4edda
-    style END fill:#c8e6c9
+  %% Unified accessible color scheme
+  style START fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style CONFIG fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style ENV fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style DATA fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style UPLOAD fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style BUILD fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style POOL fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style SUBMIT fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style PROCESS fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style MONITOR fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style DOWNLOAD fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style END fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
 ```
 
 #### V1 Sequence Diagram
 
 ```mermaid
+%%{init: {'themeVariables': {'actorBkg': '#2e7d32','actorBorder':'#1b5e20','primaryColor':'#2e7d32','primaryBorderColor':'#1b5e20','primaryTextColor':'#fff','lineColor':'#1b5e20','textColor':'#fff'}} }%%
 sequenceDiagram
     participant User
     participant Script as Submit Script
@@ -234,18 +241,21 @@ graph TB
     TASK -->|Completion| QUEUE
     QUEUE -->|Notifies| EMAIL
 
-    style BLOB fill:#fff3e0
-    style TRIGGER fill:#ffe082
-    style POOL fill:#f3e5f5
-    style CONTAINER fill:#e8f5e9
-    style OUTPUT fill:#fce4ec
-    style QUEUE fill:#ffccbc
-    style EMAIL fill:#b2dfdb
+  %% Unified accessible color scheme
+  style BLOB fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style TRIGGER fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style POOL fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style TASK fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style CONTAINER fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style OUTPUT fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style QUEUE fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
+  style EMAIL fill:#2e7d32,stroke:#1b5e20,stroke-width:1px,color:#fff
 ```
 
 #### V2 Sequence Diagram
 
 ```mermaid
+%%{init: {'themeVariables': {'actorBkg': '#2e7d32','actorBorder':'#1b5e20','primaryColor':'#2e7d32','primaryBorderColor':'#1b5e20','primaryTextColor':'#fff','lineColor':'#1b5e20','textColor':'#fff'}} }%%
 sequenceDiagram
     participant User
     participant Storage as Azure Storage
