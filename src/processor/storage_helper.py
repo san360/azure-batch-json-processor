@@ -92,8 +92,18 @@ class StorageHelper:
             logger.info(f"Successfully downloaded {blob_name} ({file_size} bytes) to {local_path}")
             return True
 
+        except HttpResponseError as e:
+            if getattr(e, 'error_code', '') == 'AuthorizationFailure':
+                logger.error(
+                    "Authorization failure downloading blob %s from container %s. Ensure managed identity has 'Storage Blob Data Reader' or 'Storage Blob Data Contributor' on storage account %s.",
+                    blob_name,
+                    container_name,
+                    self.storage_account_name,
+                )
+            logger.error(f"HTTP error downloading blob {blob_name}: {e.message}")
+            return False
         except Exception as e:
-            logger.error(f"Error downloading blob {blob_name}: {str(e)}", exc_info=True)
+            logger.error(f"Unexpected error downloading blob {blob_name}: {str(e)}", exc_info=True)
             return False
 
     def download_blob_to_string(self, container_name: str, blob_name: str) -> Optional[str]:
@@ -121,9 +131,50 @@ class StorageHelper:
             logger.info(f"Successfully downloaded {blob_name} ({len(content)} characters)")
             return content
 
-        except Exception as e:
-            logger.error(f"Error downloading blob {blob_name}: {str(e)}", exc_info=True)
+        except HttpResponseError as e:
+            if getattr(e, 'error_code', '') == 'AuthorizationFailure':
+                logger.error(
+                    "Authorization failure downloading blob %s from container %s. Assign appropriate RBAC role ('Storage Blob Data Reader/Contributor') to managed identity on %s.",
+                    blob_name,
+                    container_name,
+                    self.storage_account_name,
+                )
+            logger.error(f"HTTP error downloading blob {blob_name}: {e.message}")
             return None
+        except Exception as e:
+            logger.error(f"Unexpected error downloading blob {blob_name}: {str(e)}", exc_info=True)
+            return None
+
+    def test_blob_access(self, container_name: str) -> bool:
+        """Perform a lightweight access test against a container to validate RBAC.
+
+        Tries to get container properties. If AuthorizationFailure occurs, logs remediation guidance.
+
+        Returns:
+            True if access appears authorized, False otherwise.
+        """
+        try:
+            container_client = self.blob_service_client.get_container_client(container_name)
+            container_client.get_container_properties()
+            logger.info(
+                "Access test succeeded for container '%s' using storage account '%s' (managed identity).",
+                container_name,
+                self.storage_account_name,
+            )
+            return True
+        except HttpResponseError as e:
+            if getattr(e, 'error_code', '') == 'AuthorizationFailure':
+                logger.error(
+                    "Authorization failure accessing container %s. Assign role 'Storage Blob Data Reader/Contributor' at scope: /subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Storage/storageAccounts/%s",
+                    container_name,
+                    self.storage_account_name,
+                )
+            else:
+                logger.error(f"HTTP error during access test for container {container_name}: {e.message}")
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error during access test for container {container_name}: {str(e)}", exc_info=True)
+            return False
 
     def upload_blob_from_file(self, container_name: str, blob_name: str, local_path: str, overwrite: bool = True) -> bool:
         """
