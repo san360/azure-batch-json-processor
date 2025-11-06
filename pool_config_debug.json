@@ -1,45 +1,82 @@
 {
-  "name": "json-processor-pool",
-  "type": "Microsoft.Batch/batchAccounts/pools",
-  "properties": {
+    "id": "json-processor-pool",
     "displayName": "JSON Processor Pool with Managed Identity",
-    "vmSize": "Standard_D2s_v3",
-    "deploymentConfiguration": {
-      "virtualMachineConfiguration": {
+    "url": "/subscriptions/1da52b57-468a-4dc6-ba36-1255cc1f6e8e/resourceGroups/azure-batch/providers/Microsoft.Batch/batchAccounts/batchsan360/pools/json-processor-pool",
+    "lastModified": "2025-11-06T13:26:16.472Z",
+    "creationTime": "2025-10-17T21:30:06.510Z",
+    "state": "active",
+    "stateTransitionTime": "2025-10-17T21:30:06.510Z",
+    "allocationState": "steady",
+    "allocationStateTransitionTime": "2025-11-06T13:26:56.803Z",
+    "vmSize": "STANDARD_D2S_V3",
+    "virtualMachineConfiguration": {
         "imageReference": {
-          "publisher": "microsoft-dsvm",
-          "offer": "ubuntu-hpc",
-          "sku": "2204",
-          "version": "latest"
+            "publisher": "microsoft-dsvm",
+            "offer": "ubuntu-hpc",
+            "sku": "2204",
+            "version": "latest",
+            "virtualMachineImageId": null,
+            "exactVersion": "latest"
         },
-        "nodeAgentSkuId": "batch.node.ubuntu 22.04",
+        "nodeAgentSKUId": "batch.node.ubuntu 22.04",
+        "licenseType": null,
         "containerConfiguration": {
-          "type": "dockerCompatible",
-          "containerImageNames": [
-            "azbatchacr.azurecr.io/batch-json-processor:latest"
-          ],
-          "containerRegistries": [
-            {
-              "registryServer": "azbatchacr.azurecr.io",
-              "identityReference": {
-                "resourceId": "/subscriptions/1da52b57-468a-4dc6-ba36-1255cc1f6e8e/resourcegroups/azure-batch/providers/Microsoft.ManagedIdentity/userAssignedIdentities/azure-batch-identity"
-              }
-            }
-          ]
+            "type": "dockerCompatible",
+            "containerImageNames": [
+                "azbatchacr.azurecr.io/batch-json-processor:latest"
+            ],
+            "containerRegistries": [
+                {
+                    "username": null,
+                    "password": null,
+                    "registryServer": "azbatchacr.azurecr.io",
+                    "identityReference": {
+                        "resourceId": "/subscriptions/1da52b57-468a-4dc6-ba36-1255cc1f6e8e/resourcegroups/azure-batch/providers/Microsoft.ManagedIdentity/userAssignedIdentities/azure-batch-identity"
+                    }
+                }
+            ]
+        },
+        "diskEncryptionConfiguration": {},
+        "nodePlacementConfiguration": {
+            "policy": null
+        },
+        "osDisk": {
+            "caching": null,
+            "managedDisk": {
+                "storageAccountType": null,
+                "securityProfile": {}
+            },
+            "diskSizeGB": null,
+            "writeAcceleratorEnabled": null
         }
-      }
     },
-    "scaleSettings": {
-      "autoScale": {
-        "formula": "// In this example, the pool size is adjusted based on the number of tasks in the queue.\n// Note that both comments and line breaks are acceptable in formula strings.\n\n// Get pending tasks for the past 15 minutes.\n$samples = $ActiveTasks.GetSamplePercent(TimeInterval_Minute * 15);\n// If we have fewer than 70 percent data points, we use the last sample point, otherwise we use the maximum of last sample point and the history average.\n$tasks = $samples < 70 ? max(0, $ActiveTasks.GetSample(1)) : \nmax( $ActiveTasks.GetSample(1), avg($ActiveTasks.GetSample(TimeInterval_Minute * 15)));\n// If number of pending tasks is not 0, set targetVM to pending tasks, otherwise half of current dedicated.\n$targetVMs = $tasks > 0 ? $tasks : max(0, $TargetDedicatedNodes / 2);\n// The pool size is capped at 5, if target VM value is more than that, set it to5. This value should be adjusted according to your use case.\ncappedPoolSize = 5;\n$TargetDedicatedNodes = max(0, min($targetVMs, cappedPoolSize));\n// Set node deallocation mode - keep nodes active only until tasks finish\n$NodeDeallocationOption = taskcompletion;",
-        "evaluationInterval": "PT5M"
-      }
-    }
-  },
-  "identity": {
-    "type": "UserAssigned",
-    "userAssignedIdentities": {
-      "/subscriptions/1da52b57-468a-4dc6-ba36-1255cc1f6e8e/resourcegroups/azure-batch/providers/Microsoft.ManagedIdentity/userAssignedIdentities/azure-batch-identity": {}
-    }
-  }
+    "resizeTimeout": "PT15M",
+    "currentDedicatedNodes": 3,
+    "currentLowPriorityNodes": 0,
+    "targetDedicatedNodes": 3,
+    "targetLowPriorityNodes": 0,
+    "enableAutoScale": true,
+    "autoScaleFormula": "// In this example, the pool size is adjusted based on the number of tasks in the queue.\n// Note that both comments and line breaks are acceptable in formula strings.\n\n// Get pending tasks for the past 15 minutes.\n$samples = $ActiveTasks.GetSamplePercent(TimeInterval_Minute * 15);\n// If we have fewer than 70 percent data points, we use the last sample point, otherwise we use the maximum of last sample point and the history average.\n$tasks = $samples < 70 ? max(0, $ActiveTasks.GetSample(1)) : \nmax( $ActiveTasks.GetSample(1), avg($ActiveTasks.GetSample(TimeInterval_Minute * 15)));\n// If number of pending tasks is not 0, set targetVM to pending tasks, otherwise half of current dedicated.\n$targetVMs = $tasks > 0 ? $tasks : max(0, $TargetDedicatedNodes / 2);\n// The pool size is capped at 5, if target VM value is more than that, set it to5. This value should be adjusted according to your use case.\ncappedPoolSize = 5;\n$TargetDedicatedNodes = max(0, min($targetVMs, cappedPoolSize));\n// Set node deallocation mode - keep nodes active only until tasks finish\n$NodeDeallocationOption = taskcompletion;",
+    "autoScaleEvaluationInterval": "PT5M",
+    "autoScaleRun": {
+        "timestamp": "2025-11-06T13:31:16.466Z",
+        "results": "$TargetDedicatedNodes=3;$TargetLowPriorityNodes=0;$NodeDeallocationOption=taskcompletion;$samples=100;$targetVMs=3.2;$tasks=3.2;cappedPoolSize=5"
+    },
+    "enableInterNodeCommunication": false,
+    "taskSlotsPerNode": 1,
+    "taskSchedulingPolicy": {
+        "nodeFillType": "spread"
+    },
+    "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": [
+            {
+                "resourceId": "/subscriptions/1da52b57-468a-4dc6-ba36-1255cc1f6e8e/resourcegroups/azure-batch/providers/Microsoft.ManagedIdentity/userAssignedIdentities/azure-batch-identity",
+                "clientId": "e8471968-b071-4bec-8107-b7bab17f56fb",
+                "principalId": "ba2cb971-cd6a-46a4-9c37-0107fe60ddc1"
+            }
+        ]
+    },
+    "targetNodeCommunicationMode": null,
+    "currentNodeCommunicationMode": "simplified"
 }
