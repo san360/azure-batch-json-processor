@@ -9,6 +9,7 @@ import logging
 from typing import Optional
 from azure.identity import DefaultAzureCredential, ManagedIdentityCredential
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+from azure.core.exceptions import HttpResponseError
 
 
 logger = logging.getLogger(__name__)
@@ -17,22 +18,34 @@ logger = logging.getLogger(__name__)
 class StorageHelper:
     """Helper class for Azure Blob Storage operations with Managed Identity."""
 
-    def __init__(self, storage_account_name: str, use_managed_identity: bool = True):
+    def __init__(
+        self,
+        storage_account_name: str,
+        use_managed_identity: bool = True,
+        managed_identity_client_id: Optional[str] = None,
+    ):
         """
         Initialize Storage Helper.
 
         Args:
             storage_account_name: Name of the Azure Storage account
             use_managed_identity: If True, use Managed Identity. If False, use DefaultAzureCredential
+            managed_identity_client_id: Optional client ID for a user-assigned managed identity
         """
         self.storage_account_name = storage_account_name
         self.account_url = f"https://{storage_account_name}.blob.core.windows.net"
 
-        # Set up authentication - only managed identity for production
+        # Set up authentication - prefer explicit user-assigned MI when provided
         if use_managed_identity:
-            # Explicitly use Managed Identity
-            self.credential = ManagedIdentityCredential()
-            logger.info("Using Managed Identity for authentication")
+            if managed_identity_client_id:
+                self.credential = ManagedIdentityCredential(client_id=managed_identity_client_id)
+                logger.info(
+                    "Using User-Assigned Managed Identity (client_id=%s) for authentication",
+                    managed_identity_client_id,
+                )
+            else:
+                self.credential = ManagedIdentityCredential()
+                logger.info("Using System-Assigned (or default) Managed Identity for authentication")
         else:
             # Use DefaultAzureCredential (tries multiple methods)
             self.credential = DefaultAzureCredential()
@@ -140,8 +153,17 @@ class StorageHelper:
             logger.info(f"Successfully uploaded {local_path} ({file_size} bytes) to {blob_name}")
             return True
 
+        except HttpResponseError as e:
+            if getattr(e, 'error_code', '') == 'AuthorizationFailure':
+                logger.error(
+                    "Authorization failure uploading blob %s. Ensure the managed identity has the 'Storage Blob Data Contributor' role on the storage account %s.",
+                    blob_name,
+                    self.storage_account_name,
+                )
+            logger.error(f"HTTP error uploading blob {blob_name}: {e.message}")
+            return False
         except Exception as e:
-            logger.error(f"Error uploading blob {blob_name}: {str(e)}", exc_info=True)
+            logger.error(f"Unexpected error uploading blob {blob_name}: {str(e)}", exc_info=True)
             return False
 
     def upload_blob_from_string(self, container_name: str, blob_name: str, content: str, overwrite: bool = True) -> bool:
@@ -170,8 +192,17 @@ class StorageHelper:
             logger.info(f"Successfully uploaded content ({len(content)} characters) to {blob_name}")
             return True
 
+        except HttpResponseError as e:
+            if getattr(e, 'error_code', '') == 'AuthorizationFailure':
+                logger.error(
+                    "Authorization failure uploading blob %s. Assign role 'Storage Blob Data Contributor' to the managed identity on storage account %s.",
+                    blob_name,
+                    self.storage_account_name,
+                )
+            logger.error(f"HTTP error uploading blob {blob_name}: {e.message}")
+            return False
         except Exception as e:
-            logger.error(f"Error uploading blob {blob_name}: {str(e)}", exc_info=True)
+            logger.error(f"Unexpected error uploading blob {blob_name}: {str(e)}", exc_info=True)
             return False
 
     def list_blobs(self, container_name: str, name_starts_with: Optional[str] = None) -> list:

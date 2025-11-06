@@ -88,9 +88,16 @@ def main():
 
         # Initialize Storage Helper with Managed Identity
         logger.info("Initializing Azure Storage client with Managed Identity...")
+        managed_identity_client_id = get_env_var("MANAGED_IDENTITY_CLIENT_ID", required=False)
+        if managed_identity_client_id:
+            logger.info(f"Using managed identity client_id: {managed_identity_client_id}")
+        else:
+            logger.info("No MANAGED_IDENTITY_CLIENT_ID provided; falling back to system-assigned or default identity")
+
         storage_helper = StorageHelper(
             storage_account_name=storage_account_name,
-            use_managed_identity=True
+            use_managed_identity=True,
+            managed_identity_client_id=managed_identity_client_id,
         )
 
         # Create working directory - try multiple locations
@@ -245,7 +252,12 @@ def main():
             logs_container = get_env_var("LOGS_CONTAINER", required=False, default="batch-logs")
 
             if storage_account_name:
-                storage_helper = StorageHelper(storage_account_name, use_managed_identity=True)
+                managed_identity_client_id = get_env_var("MANAGED_IDENTITY_CLIENT_ID", required=False)
+                storage_helper = StorageHelper(
+                    storage_account_name,
+                    use_managed_identity=True,
+                    managed_identity_client_id=managed_identity_client_id,
+                )
                 log_blob_name = f"logs/errors/{error_summary['job_id']}/{error_summary['task_id']}_error.json"
 
                 storage_helper.upload_blob_from_string(
