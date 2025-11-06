@@ -140,6 +140,9 @@ def create_batch_job(
 
         try:
             # Environment variables for the container
+            # Include managed identity client ID if defined in config to ensure the correct user-assigned identity is used
+            mi_client_id = config["azure"].get("identity", {}).get("client_id")
+
             environment_settings = [
                 EnvironmentSetting(name="STORAGE_ACCOUNT_NAME", value=storage_account),
                 EnvironmentSetting(name="INPUT_CONTAINER", value=input_container),
@@ -149,6 +152,9 @@ def create_batch_job(
                 EnvironmentSetting(name="JOB_ID", value=job_id),
                 EnvironmentSetting(name="TASK_ID", value=task_id),
             ]
+
+            if mi_client_id:
+                environment_settings.append(EnvironmentSetting(name="MANAGED_IDENTITY_CLIENT_ID", value=mi_client_id))
 
             # Container settings - let the container use its default entrypoint and command
             container_settings = TaskContainerSettings(
